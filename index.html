@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enfield Royal Clinic — Price Lookup</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+:root {
+  --navy: #0c1f35; --navy-mid: #16304d; --navy-light: #1e4476;
+  --gold: #c9a84c; --gold-light: #e8c97a; --gold-pale: #f5ecd4;
+  --cream: #fdfaf5; --surface: #ffffff; --border: #e2e8f0;
+  --text: #1a2332; --muted: #64748b; --success: #059669;
+  --danger: #dc2626; --shadow: 0 4px 24px rgba(12,31,53,0.12); --radius: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+
+/* LOGIN */
+#login-screen { min-height:100vh; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+.login-bg { position:absolute; inset:0; background: linear-gradient(135deg,rgba(12,31,53,0.92) 0%,rgba(30,68,118,0.85) 50%,rgba(201,168,76,0.3) 100%); background-color:#0c1f35; }
+.login-bg::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 70% 50%,rgba(201,168,76,0.15) 0%,transparent 60%); }
+.login-particles { position:absolute; inset:0; overflow:hidden; }
+.particle { position:absolute; width:2px; height:2px; background:rgba(201,168,76,0.4); border-radius:50%; animation:float linear infinite; }
+@keyframes float { 0%{transform:translateY(100vh) rotate(0deg);opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{transform:translateY(-100px) rotate(720deg);opacity:0} }
+.login-card { position:relative; z-index:10; background:rgba(255,255,255,0.97); backdrop-filter:blur(20px); border-radius:24px; padding:52px 48px; width:100%; max-width:440px; box-shadow:0 32px 80px rgba(0,0,0,0.4),0 0 0 1px rgba(201,168,76,0.3); text-align:center; }
+.login-emblem { width:72px; height:72px; background:linear-gradient(135deg,var(--navy),var(--navy-light)); border-radius:50%; margin:0 auto 20px; display:flex; align-items:center; justify-content:center; font-size:28px; box-shadow:0 8px 24px rgba(12,31,53,0.4); border:2px solid var(--gold); }
+.login-logo { font-family:'Cormorant Garamond',serif; font-size:26px; font-weight:700; color:var(--navy); margin-bottom:4px; }
+.login-tagline { font-size:11px; color:var(--gold); letter-spacing:3px; text-transform:uppercase; font-weight:600; margin-bottom:36px; }
+.login-divider { display:flex; align-items:center; gap:12px; margin-bottom:28px; }
+.login-divider::before,.login-divider::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,transparent,var(--gold),transparent); }
+.login-divider span { font-size:11px; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; }
+.login-field { text-align:left; margin-bottom:16px; }
+.login-field label { display:block; font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px; }
+.login-field input { width:100%; padding:13px 16px; border:1.5px solid var(--border); border-radius:10px; font-size:14px; font-family:'Inter',sans-serif; outline:none; transition:all 0.2s; background:#fafbfc; }
+.login-field input:focus { border-color:var(--navy-light); background:white; box-shadow:0 0 0 3px rgba(30,68,118,0.08); }
+.login-btn { width:100%; padding:14px; background:linear-gradient(135deg,var(--navy),var(--navy-light)); color:white; border:none; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; margin-top:8px; transition:all 0.2s; letter-spacing:0.5px; }
+.login-btn:hover { transform:translateY(-1px); box-shadow:0 8px 24px rgba(12,31,53,0.35); }
+.login-error { color:var(--danger); font-size:12px; margin-top:12px; display:none; padding:10px 14px; background:#fef2f2; border-radius:8px; border:1px solid #fecaca; }
+.login-hint { margin-top:24px; padding-top:20px; border-top:1px solid var(--border); font-size:11px; color:#94a3b8; line-height:1.6; }
+.login-hint strong { color:var(--muted); }
+
+/* MAIN APP */
+#app { display:none; flex-direction:column; min-height:100vh; }
+.app-header { background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 60%,#1a3556 100%); padding:0 28px; display:flex; align-items:center; justify-content:space-between; height:64px; position:sticky; top:0; z-index:100; box-shadow:0 2px 20px rgba(0,0,0,0.25); border-bottom:1px solid rgba(201,168,76,0.3); }
+.header-brand { display:flex; align-items:center; gap:12px; }
+.header-icon { width:36px; height:36px; background:rgba(201,168,76,0.15); border:1px solid rgba(201,168,76,0.4); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; }
+.header-title { font-family:'Cormorant Garamond',serif; font-size:19px; color:white; font-weight:700; }
+.header-sub { font-size:10px; color:var(--gold-light); letter-spacing:2px; text-transform:uppercase; opacity:0.8; }
+.header-actions { display:flex; gap:8px; align-items:center; }
+.header-btn { padding:7px 14px; border-radius:7px; border:1px solid rgba(255,255,255,0.2); background:transparent; color:rgba(255,255,255,0.85); font-size:12px; font-weight:500; cursor:pointer; transition:all 0.2s; font-family:'Inter',sans-serif; }
+.header-btn:hover { background:rgba(255,255,255,0.1); color:white; }
+.header-btn.gold { background:var(--gold); border-color:var(--gold); color:var(--navy); font-weight:700; }
+.header-btn.gold:hover { background:var(--gold-light); }
+.tab-bar { background:var(--surface); border-bottom:1px solid var(--border); display:flex; padding:0 28px; }
+.tab { padding:14px 22px; font-size:13px; font-weight:500; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; transition:all 0.2s; }
+.tab.active { color:var(--navy); border-bottom-color:var(--gold); font-weight:600; }
+.app-body { flex:1; padding:24px 28px; max-width:1400px; margin:0 auto; width:100%; }
+
+/* SYNC STATUS BAR */
+.sync-bar { display:flex; align-items:center; gap:10px; padding:10px 16px; border-radius:10px; font-size:12px; font-weight:500; margin-bottom:16px; }
+.sync-bar.loading { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
+.sync-bar.success { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
+.sync-bar.error { background:#fef2f2; color:#dc2626; border:1px solid #fecaca; }
+.sync-bar.offline { background:#fffbeb; color:#92400e; border:1px solid #fcd34d; }
+.sync-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.sync-bar.loading .sync-dot { background:#3b82f6; animation:pulse 1s infinite; }
+.sync-bar.success .sync-dot { background:#22c55e; }
+.sync-bar.error .sync-dot { background:#ef4444; }
+.sync-bar.offline .sync-dot { background:#f59e0b; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* SEARCH */
+.search-section { background:var(--surface); border-radius:var(--radius); padding:20px 24px; box-shadow:var(--shadow); margin-bottom:20px; border:1px solid rgba(201,168,76,0.15); }
+.search-label { font-size:11px; font-weight:700; color:var(--gold); text-transform:uppercase; letter-spacing:2px; margin-bottom:12px; }
+.search-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.search-box { flex:1; min-width:200px; position:relative; }
+.search-box input { width:100%; padding:11px 16px 11px 40px; border:1.5px solid var(--border); border-radius:9px; font-size:14px; font-family:'Inter',sans-serif; outline:none; transition:all 0.2s; background:#fafbfc; }
+.search-box input:focus { border-color:var(--navy-light); background:white; box-shadow:0 0 0 3px rgba(30,68,118,0.06); }
+.search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:15px; }
+.dept-select { padding:11px 14px; border:1.5px solid var(--border); border-radius:9px; font-size:13px; font-family:'Inter',sans-serif; outline:none; background:#fafbfc; color:var(--text); min-width:200px; cursor:pointer; }
+.vat-toggle { display:flex; align-items:center; gap:8px; padding:10px 16px; border:1.5px solid var(--border); border-radius:9px; cursor:pointer; font-size:13px; font-weight:600; background:#fafbfc; transition:all 0.2s; user-select:none; white-space:nowrap; color:var(--muted); }
+.vat-toggle.active { background:#fffbeb; border-color:var(--gold); color:#92400e; }
+.toggle-pill { width:36px; height:20px; border-radius:10px; background:var(--border); position:relative; transition:background 0.2s; flex-shrink:0; }
+.toggle-pill::after { content:''; position:absolute; width:14px; height:14px; border-radius:50%; background:white; top:3px; left:3px; transition:transform 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.2); }
+.vat-toggle.active .toggle-pill { background:var(--gold); }
+.vat-toggle.active .toggle-pill::after { transform:translateX(16px); }
+
+/* GRID */
+.lookup-grid { display:grid; grid-template-columns:1fr 320px; gap:16px; align-items:start; }
+.panel { background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; border:1px solid rgba(0,0,0,0.05); }
+.panel-header { padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; background:linear-gradient(135deg,#fafbfc,white); }
+.panel-title { font-size:12px; font-weight:700; color:var(--navy); text-transform:uppercase; letter-spacing:0.8px; }
+.panel-count { font-size:11px; background:var(--navy); color:white; padding:2px 9px; border-radius:10px; font-weight:700; }
+.results-list { max-height:460px; overflow-y:auto; }
+.result-item { display:flex; align-items:center; padding:11px 18px; border-bottom:1px solid #f1f5f9; cursor:pointer; transition:background 0.12s; gap:10px; }
+.result-item:hover { background:#f8faff; }
+.result-item.selected { background:#f0f7ff; }
+.result-item:last-child { border-bottom:none; }
+.result-dept-badge { font-size:9px; padding:2px 7px; border-radius:4px; background:var(--gold-pale); color:#78500a; font-weight:700; white-space:nowrap; flex-shrink:0; max-width:110px; overflow:hidden; text-overflow:ellipsis; }
+.result-name { flex:1; font-size:13px; font-weight:500; color:var(--text); line-height:1.3; }
+.result-price { font-size:12px; font-weight:700; color:var(--success); white-space:nowrap; flex-shrink:0; }
+.add-btn { width:26px; height:26px; border-radius:6px; border:none; background:var(--navy); color:white; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.15s; line-height:1; }
+.add-btn:hover { background:var(--navy-light); }
+.add-btn.added { background:var(--success); }
+.empty-state { padding:48px 20px; text-align:center; color:var(--muted); font-size:13px; line-height:1.6; }
+.empty-state-icon { font-size:32px; margin-bottom:12px; opacity:0.4; }
+.selected-list { max-height:340px; overflow-y:auto; }
+.selected-item { padding:10px 14px; border-bottom:1px solid #f1f5f9; display:flex; align-items:flex-start; gap:8px; }
+.selected-item:last-child { border-bottom:none; }
+.selected-info { flex:1; }
+.selected-name { font-size:12px; font-weight:600; color:var(--navy); margin-bottom:2px; line-height:1.3; }
+.selected-dept { font-size:10px; color:var(--muted); }
+.remove-btn { width:20px; height:20px; border-radius:4px; border:none; background:#fee2e2; color:var(--danger); font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; line-height:1; margin-top:1px; }
+.btn { padding:9px 18px; border-radius:8px; border:none; font-size:12px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; transition:all 0.2s; letter-spacing:0.3px; }
+.btn-primary { background:var(--navy); color:white; }
+.btn-primary:hover { background:var(--navy-light); transform:translateY(-1px); }
+.btn-gold { background:var(--gold); color:var(--navy); }
+.btn-gold:hover { background:var(--gold-light); }
+.btn-outline { background:white; color:var(--navy); border:1.5px solid var(--border); }
+.btn-outline:hover { border-color:var(--navy); background:#f8faff; }
+
+/* REPORT */
+.report-section { background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); margin-top:16px; overflow:hidden; border:1px solid rgba(201,168,76,0.2); }
+.report-header { padding:14px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; background:linear-gradient(135deg,#fdfaf5,white); }
+.report-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.report-output { padding:24px; font-family:'Courier New',monospace; font-size:12.5px; line-height:1.9; white-space:pre-wrap; color:var(--text); min-height:120px; background:#fafbfc; }
+
+/* ADMIN */
+.admin-notice { background:linear-gradient(135deg,#fffbeb,#fef9ee); border:1px solid #fcd34d; border-radius:10px; padding:14px 18px; font-size:13px; color:#92400e; margin-bottom:20px; display:flex; align-items:center; gap:10px; }
+.admin-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:20px; }
+.admin-card { background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; border:1px solid rgba(0,0,0,0.05); }
+.admin-card-header { padding:18px 20px; background:linear-gradient(135deg,var(--navy),var(--navy-mid)); color:white; border-bottom:1px solid rgba(201,168,76,0.3); }
+.admin-card-header h3 { font-size:14px; font-weight:600; }
+.admin-card-header p { font-size:11px; opacity:0.65; margin-top:3px; }
+.admin-card-body { padding:20px; }
+.form-field { margin-bottom:14px; }
+.form-field label { display:block; font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; }
+.form-field input,.form-field select { width:100%; padding:10px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; font-family:'Inter',sans-serif; outline:none; transition:border-color 0.2s; background:#fafbfc; }
+.form-field input:focus,.form-field select:focus { border-color:var(--navy-light); background:white; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.price-table-wrap { background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; border:1px solid rgba(0,0,0,0.05); }
+.table-toolbar { padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; background:linear-gradient(135deg,#fafbfc,white); }
+.table-search { padding:8px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; font-family:'Inter',sans-serif; outline:none; min-width:200px; }
+table { width:100%; border-collapse:collapse; }
+thead th { padding:11px 14px; text-align:left; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.8px; color:var(--muted); background:#f8faff; border-bottom:1px solid var(--border); white-space:nowrap; }
+tbody tr { border-bottom:1px solid #f1f5f9; transition:background 0.1s; }
+tbody tr:hover { background:#f8faff; }
+tbody tr:last-child { border-bottom:none; }
+tbody td { padding:10px 14px; font-size:12px; color:var(--text); }
+.td-dept { font-size:9px; padding:2px 7px; border-radius:4px; background:var(--gold-pale); color:#78500a; font-weight:700; white-space:nowrap; display:inline-block; max-width:120px; overflow:hidden; text-overflow:ellipsis; }
+.td-price { font-weight:700; color:var(--success); }
+.edit-row-btn { padding:4px 10px; border-radius:5px; border:1px solid var(--border); background:white; font-size:11px; cursor:pointer; font-family:'Inter',sans-serif; transition:all 0.15s; }
+.edit-row-btn:hover { background:var(--navy); color:white; border-color:var(--navy); }
+.table-scroll { max-height:440px; overflow-y:auto; }
+
+/* SETUP CARD */
+.setup-card { background:linear-gradient(135deg,#f0f7ff,#e8f4fd); border:1px solid #bfdbfe; border-radius:var(--radius); padding:24px; margin-bottom:20px; }
+.setup-card h3 { color:var(--navy); font-size:15px; margin-bottom:6px; }
+.setup-card p { color:var(--muted); font-size:13px; margin-bottom:16px; line-height:1.6; }
+.setup-steps { list-style:none; counter-reset:steps; }
+.setup-steps li { counter-increment:steps; display:flex; gap:12px; align-items:flex-start; margin-bottom:12px; font-size:13px; color:var(--text); line-height:1.5; }
+.setup-steps li::before { content:counter(steps); width:22px; height:22px; border-radius:50%; background:var(--navy); color:white; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+.setup-steps code { background:rgba(12,31,53,0.08); padding:1px 6px; border-radius:4px; font-size:12px; font-family:'Courier New',monospace; }
+.url-input-row { display:flex; gap:10px; }
+.url-input-row input { flex:1; padding:11px 14px; border:1.5px solid var(--border); border-radius:9px; font-size:13px; font-family:'Inter',sans-serif; outline:none; }
+.url-input-row input:focus { border-color:var(--navy-light); }
+
+/* MODAL */
+.modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:200; display:none; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px); }
+.modal-bg.open { display:flex; }
+.modal { background:white; border-radius:18px; padding:32px; width:100%; max-width:500px; box-shadow:0 24px 64px rgba(0,0,0,0.25); border-top:3px solid var(--gold); }
+.modal h3 { font-size:16px; margin-bottom:20px; color:var(--navy); font-weight:700; }
+.modal-actions { display:flex; gap:10px; margin-top:20px; justify-content:flex-end; }
+
+/* SAVING INDICATOR */
+.saving-indicator { display:none; align-items:center; gap:6px; font-size:11px; color:#3b82f6; font-weight:500; }
+.saving-indicator.show { display:flex; }
+.saving-spinner { width:12px; height:12px; border:2px solid #bfdbfe; border-top-color:#3b82f6; border-radius:50%; animation:spin 0.6s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* TOAST */
+.toast { position:fixed; bottom:28px; right:28px; background:var(--navy); color:white; padding:12px 20px; border-radius:10px; font-size:13px; font-weight:500; box-shadow:0 8px 32px rgba(0,0,0,0.25); z-index:300; transform:translateY(80px); opacity:0; transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1); border-left:3px solid var(--gold); }
+.toast.show { transform:translateY(0); opacity:1; }
+.toast.success { background:var(--success); border-left-color:#6ee7b7; }
+.toast.error { background:var(--danger); border-left-color:#fca5a5; }
+
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:3px; }
+
+@media (max-width:768px) {
+  .lookup-grid { grid-template-columns:1fr; }
+  .admin-grid { grid-template-columns:1fr; }
+  .app-body { padding:16px; }
+  .form-row { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-bg"></div>
+  <div class="login-particles" id="particles"></div>
+  <div class="login-card">
+    <div class="login-emblem">🏥</div>
+    <div class="login-logo">Enfield Royal Clinic</div>
+    <div class="login-tagline">Dubai · Staff Portal</div>
+    <div class="login-divider"><span>Sign In to Continue</span></div>
+    <div class="login-field"><label>Username</label><input type="text" id="login-user" placeholder="Enter your username" autocomplete="off"></div>
+    <div class="login-field"><label>Password</label><input type="password" id="login-pass" placeholder="Enter your password"></div>
+    <button class="login-btn" onclick="doLogin()">Sign In →</button>
+    <div class="login-error" id="login-error">⚠️ Incorrect username or password.</div>
+    <div class="login-hint"><strong>Staff:</strong> staff / enfield2026</div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="header-icon">🏥</div>
+      <div>
+        <div class="header-title">Enfield Royal Clinic</div>
+        <div class="header-sub">Dubai · Price Lookup System</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="saving-indicator" id="saving-indicator"><div class="saving-spinner"></div> Saving...</div>
+      <span id="user-badge" style="font-size:12px;color:rgba(255,255,255,0.6);"></span>
+      <button class="header-btn gold" onclick="showTab('lookup')">🔍 Lookup</button>
+      <button class="header-btn" id="admin-tab-btn" onclick="showTab('admin')" style="display:none">⚙️ Admin</button>
+      <button class="header-btn" onclick="doLogout()">Sign Out</button>
+    </div>
+  </header>
+  <div class="tab-bar">
+    <div class="tab active" id="tab-lookup" onclick="showTab('lookup')">Price Lookup</div>
+    <div class="tab" id="tab-admin" onclick="showTab('admin')" style="display:none">Admin Panel</div>
+  </div>
+  <div class="app-body">
+
+    <!-- LOOKUP VIEW -->
+    <div id="view-lookup">
+      <div id="sync-bar-lookup" class="sync-bar loading"><div class="sync-dot"></div><span id="sync-msg-lookup">Loading prices from server...</span><button onclick="loadFromSheets()" style="margin-left:auto;padding:4px 10px;border-radius:6px;border:1px solid currentColor;background:transparent;cursor:pointer;font-size:11px;font-family:Inter,sans-serif;color:inherit;font-weight:600;">↺ Refresh</button></div>
+      <div class="search-section">
+        <div class="search-label">🔍 Search Treatment or Procedure</div>
+        <div class="search-row">
+          <div class="search-box"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="e.g. Botox, Laser, Blood Test, Dental..." oninput="doSearch()"></div>
+          <select class="dept-select" id="dept-filter" onchange="doSearch()"><option value="">All Departments</option></select>
+          <label class="vat-toggle" id="vat-toggle" onclick="toggleVAT()"><div class="toggle-pill" id="vat-pill"></div>Include 5% VAT</label>
+        </div>
+      </div>
+      <div class="lookup-grid">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Search Results</span><span class="panel-count" id="result-count">0</span></div>
+          <div class="results-list" id="results-list"><div class="empty-state"><div class="empty-state-icon">🔍</div>Start typing to search treatments</div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">Selected Items</span>
+              <div style="display:flex;gap:6px;align-items:center;"><span class="panel-count" id="selected-count">0</span><button class="btn btn-outline" style="padding:3px 9px;font-size:10px;" onclick="clearSelected()">Clear All</button></div>
+            </div>
+            <div class="selected-list" id="selected-list"><div class="empty-state" style="padding:24px 16px;"><div style="font-size:20px;margin-bottom:8px;opacity:0.3">📋</div>Add items from search results</div></div>
+          </div>
+          <button class="btn btn-primary" style="width:100%;padding:13px;font-size:13px;" onclick="generateReport()">📄 Generate Patient Report</button>
+        </div>
+      </div>
+      <div class="report-section" id="report-section" style="display:none">
+        <div class="report-header">
+          <div class="panel-title">📋 Patient Price Report</div>
+          <div class="report-actions">
+            <button class="btn btn-outline" onclick="generateReport()">🔄 Refresh</button>
+            <button class="btn btn-primary" onclick="copyReport()">📋 Copy</button>
+            <button class="btn btn-gold" onclick="clearSelected()">✖ Clear</button>
+          </div>
+        </div>
+        <div class="report-output" id="report-output"></div>
+      </div>
+    </div>
+
+    <!-- ADMIN VIEW -->
+    <div id="view-admin" style="display:none">
+
+      <!-- SETUP CARD — shown only if not configured -->
+      <div class="setup-card" id="setup-card" style="display:none">
+        <h3>🔧 One-Time Google Sheets Setup</h3>
+        <p>Connect your Google Sheet so all devices share the same live price list. Takes about 5 minutes.</p>
+        <ol class="setup-steps">
+          <li>Open your Enfield prices Google Sheet (or create one with columns: <code>department</code>, <code>treatment</code>, <code>original_price</code>, <code>offer_price</code>, <code>3_sessions</code>, <code>6_sessions</code>, <code>notes</code>)</li>
+          <li>In Google Sheets click <strong>Extensions → Apps Script</strong></li>
+          <li>Delete any existing code and paste the script below, then click <strong>Save</strong></li>
+          <li>Click <strong>Deploy → New Deployment → Web App</strong></li>
+          <li>Set <em>Execute as:</em> <strong>Me</strong> · Set <em>Who has access:</em> <strong>Anyone</strong></li>
+          <li>Click <strong>Deploy</strong> → copy the Web App URL → paste it below</li>
+        </ol>
+        <div style="background:#1e293b;border-radius:10px;padding:16px;margin:16px 0;overflow-x:auto;">
+          <pre style="color:#e2e8f0;font-size:11px;line-height:1.7;font-family:'Courier New',monospace;margin:0;white-space:pre-wrap;">function doGet(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var rows = data.slice(1).map(function(row) {
+    var obj = {};
+    headers.forEach(function(h, i) { obj[h] = row[i] ? String(row[i]) : null; });
+    return obj;
+  });
+  return ContentService.createTextOutput(JSON.stringify({status:'ok',data:rows}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var payload = JSON.parse(e.postData.contents);
+  if (payload.action === 'update') {
+    var data = sheet.getDataRange().getValues();
+    var headers = data[0];
+    var deptIdx = headers.indexOf('department');
+    var nameIdx = headers.indexOf('treatment');
+    var found = false;
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][deptIdx] === payload.department && data[i][nameIdx] === payload.treatment) {
+        headers.forEach(function(h, j) { if (payload[h] !== undefined) sheet.getRange(i+1, j+1).setValue(payload[h]||''); });
+        found = true; break;
+      }
+    }
+    if (!found) {
+      var newRow = headers.map(function(h) { return payload[h] || ''; });
+      sheet.appendRow(newRow);
+    }
+    return ContentService.createTextOutput(JSON.stringify({status:'ok'})).setMimeType(ContentService.MimeType.JSON);
+  }
+  if (payload.action === 'delete') {
+    var data2 = sheet.getDataRange().getValues();
+    var headers2 = data2[0];
+    var dIdx = headers2.indexOf('department');
+    var nIdx = headers2.indexOf('treatment');
+    for (var j = 1; j < data2.length; j++) {
+      if (data2[j][dIdx] === payload.department && data2[j][nIdx] === payload.treatment) {
+        sheet.deleteRow(j+1); break;
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify({status:'ok'})).setMimeType(ContentService.MimeType.JSON);
+  }
+}</pre>
+        </div>
+        <div class="form-field" style="margin-bottom:12px;"><label>Your Apps Script Web App URL</label>
+          <div class="url-input-row">
+            <input type="text" id="script-url-input" placeholder="https://script.google.com/macros/s/.../exec">
+            <button class="btn btn-primary" onclick="saveScriptUrl()">✅ Connect</button>
+          </div>
+        </div>
+        <p style="font-size:11px;color:var(--muted);margin:0;">Once connected, all price edits in the Admin panel will instantly sync to your Google Sheet and reflect on all devices.</p>
+      </div>
+
+      <div class="admin-notice" id="admin-notice">
+        ⚠️ <strong>Admin Panel.</strong> All changes save to Google Sheets and reflect on all devices instantly.
+        <button onclick="showSetup()" style="margin-left:auto;padding:5px 12px;border-radius:6px;border:1px solid #f59e0b;background:transparent;cursor:pointer;font-size:11px;font-family:Inter,sans-serif;color:#92400e;font-weight:600;">⚙️ Setup / Change URL</button>
+      </div>
+
+      <div class="admin-grid">
+        <!-- Connection Status -->
+        <div class="admin-card">
+          <div class="admin-card-header"><h3>🔌 Connection Status</h3><p>Google Sheets sync status</p></div>
+          <div class="admin-card-body">
+            <div id="connection-status-box" style="padding:14px;border-radius:10px;background:#f0fdf4;border:1px solid #bbf7d0;font-size:13px;color:#15803d;margin-bottom:14px;">
+              ✅ Connected to Google Sheets
+            </div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.7;background:#f8faff;padding:10px;border-radius:8px;margin-bottom:14px;">
+              <strong>How it works:</strong><br>
+              • Every price edit saves instantly to your Google Sheet<br>
+              • All devices load prices from the same sheet on open<br>
+              • Changes reflect across all devices within seconds
+            </div>
+            <button class="btn btn-primary" style="width:100%" onclick="loadFromSheets()">🔄 Force Refresh Prices</button>
+            <div id="last-sync-time" style="margin-top:8px;font-size:11px;color:var(--muted);text-align:center;"></div>
+          </div>
+        </div>
+
+        <!-- Add New Item -->
+        <div class="admin-card">
+          <div class="admin-card-header"><h3>➕ Add New Treatment</h3><p>Add a new procedure to the live price list</p></div>
+          <div class="admin-card-body">
+            <div class="form-field"><label>Department</label><select id="new-dept"></select></div>
+            <div class="form-field"><label>Treatment Name</label><input type="text" id="new-name" placeholder="e.g. Laser Toning Full Face"></div>
+            <div class="form-row">
+              <div class="form-field"><label>Original Price (AED)</label><input type="text" id="new-orig" placeholder="e.g. 800"></div>
+              <div class="form-field"><label>Offer Price (AED)</label><input type="text" id="new-offer" placeholder="Optional"></div>
+            </div>
+            <div class="form-field"><label>Notes</label><input type="text" id="new-notes" placeholder="Optional"></div>
+            <button class="btn btn-primary" style="width:100%" onclick="addNewItem()">✅ Add to Price List</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Price Table -->
+      <div class="price-table-wrap">
+        <div class="table-toolbar">
+          <div><div class="panel-title">All Treatments</div><div id="total-count" style="font-size:11px;color:var(--muted);margin-top:2px;"></div></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <input class="table-search" type="text" placeholder="Filter by name..." oninput="filterTable(this.value)">
+            <select class="dept-select" style="min-width:160px;padding:8px 12px;" onchange="filterTableDept(this.value)"><option value="">All Departments</option></select>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Department</th><th>Treatment / Procedure</th><th>Original Price</th><th>Offer Price</th><th>Notes</th><th></th></tr></thead>
+            <tbody id="price-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-bg" id="edit-modal">
+  <div class="modal">
+    <h3>✏️ Edit Treatment</h3>
+    <input type="hidden" id="edit-index">
+    <div class="form-field"><label>Department</label><select id="edit-dept"></select></div>
+    <div class="form-field"><label>Treatment Name</label><input type="text" id="edit-name"></div>
+    <div class="form-row">
+      <div class="form-field"><label>Original Price (AED)</label><input type="text" id="edit-orig"></div>
+      <div class="form-field"><label>Offer Price (AED)</label><input type="text" id="edit-offer"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>3 Sessions</label><input type="text" id="edit-3s"></div>
+      <div class="form-field"><label>6 Sessions</label><input type="text" id="edit-6s"></div>
+    </div>
+    <div class="form-field"><label>Notes</label><input type="text" id="edit-notes"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn" style="background:#dc2626;color:white" onclick="deleteItem()">🗑 Delete</button>
+      <button class="btn btn-primary" onclick="saveEdit()">💾 Save to All Devices</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────────────────
+const USERS = {
+  staff: { pass: 'enfield2026', role: 'staff' },
+  admin: { pass: 'raza123', role: 'admin' }
+};
+
+const STORAGE_KEY_URL = 'enfield_script_url';
+const STORAGE_KEY_DATA = 'enfieldPricesV4';
+const STORAGE_KEY_TS = 'enfieldPricesTS';
+
+let currentUser = null;
+let vatOn = false;
+let selectedItems = [];
+let priceData = [];
+let tableFilter = '';
+let tableDept = '';
+let scriptUrl = localStorage.getItem(STORAGE_KEY_URL) || '';
+
+// ── RAW FALLBACK DATA (used only if Google Sheets not configured) ────────────
+const RAW_DATA = [{"department": "Derma", "treatment": "Enjoue Skin Booster", "original_price": "1500", "3_sessions": "3600"}, {"department": "Derma", "treatment": "Enjoue with Anti Stress", "original_price": "2000"}, {"department": "Derma", "treatment": "Profilo for Face", "original_price": "1200", "3_sessions": "2997"}, {"department": "Derma", "treatment": "Profilo Body", "original_price": "2500", "notes": "We dont have"}, {"department": "Derma", "treatment": "Perla Skin Booster", "original_price": "1500", "offer_price": "1200"}, {"department": "Derma", "treatment": "Restylave Vital Light (Under Eye)", "original_price": "2000", "offer_price": "1500"}, {"department": "Derma", "treatment": "Restylane Vital (For Face)", "original_price": "2000"}, {"department": "Derma", "treatment": "AMESON Salmon DNA", "original_price": "2000", "offer_price": "1500", "3_sessions": "6000"}, {"department": "Derma", "treatment": "Exosome Solution for Face and Hair", "original_price": "1800", "offer_price": "1549", "3_sessions": "4500"}, {"department": "Derma", "treatment": "Lixoford S (Exosome Face)", "original_price": "3000", "offer_price": "2500", "3_sessions": "5000 (2 sessions)"}, {"department": "Derma", "treatment": "Lixoford H (Exosome Hair)", "original_price": "3000", "offer_price": "2500", "3_sessions": "5000 (2 sessions)"}, {"department": "Derma", "treatment": "Nithya Collagen Face", "original_price": "1800", "offer_price": "1499", "3_sessions": "4399"}, {"department": "Derma", "treatment": "Inno Tods Skin Booster", "original_price": "999", "offer_price": "899", "3_sessions": "2800"}, {"department": "Derma", "treatment": "Inovyal (Glowing Skin)", "original_price": "1800", "offer_price": "1449", "3_sessions": "4500"}, {"department": "Derma", "treatment": "NCTF Skin Booster", "original_price": "999", "offer_price": "899", "3_sessions": "2800"}, {"department": "Derma", "treatment": "Five Factor Anti Aging (RDS)", "original_price": "2500", "offer_price": "2000"}, {"department": "Derma", "treatment": "Estillad Eybella", "original_price": "600", "3_sessions": "1700"}, {"department": "Derma", "treatment": "Estillad Whitening Plus", "original_price": "800", "3_sessions": "2500"}, {"department": "Derma", "treatment": "Amber Hydro (Glow & Hydration)", "original_price": "700", "3_sessions": "2000"}, {"department": "Derma", "treatment": "Amber Saffron (Hyperpigmentation Glow & Hydration)", "original_price": "999", "3_sessions": "2800"}, {"department": "Derma", "treatment": "Aqua Lifting Injection", "original_price": "600 (starting price)", "notes": "Starting price"}, {"department": "Derma", "treatment": "Fillmed NCTF 135 HA", "original_price": "1100", "3_sessions": "3000"}, {"department": "Derma", "treatment": "Fillmed NCTF 135", "original_price": "999", "3_sessions": "2700"}, {"department": "Derma", "treatment": "Jalupro HMW", "original_price": "999", "3_sessions": "2700"}, {"department": "Derma", "treatment": "Jalupro Classic", "original_price": "799", "3_sessions": "2100"}, {"department": "Derma", "treatment": "Seventy Hyal 2000", "original_price": "999", "3_sessions": "2700"}, {"department": "Derma", "treatment": "Xela Rederm", "original_price": "799", "3_sessions": "2100"}, {"department": "Derma", "treatment": "Xela Derm HA", "original_price": "1200", "3_sessions": "3200"}, {"department": "Derma", "treatment": "Sunekos 200", "original_price": "999", "3_sessions": "2500"}, {"department": "Derma", "treatment": "Sunekos 1200", "original_price": "1200", "3_sessions": "3000"}, {"department": "Derma", "treatment": "Teosyal Redensity 1", "original_price": "1200"}, {"department": "Derma", "treatment": "Enjoue Skin Booster (2 box)", "offer_price": "2490", "notes": "Summer Offer - Double Enjoue"}, {"department": "Derma - IV Drips", "treatment": "NAD IV 100mg", "original_price": "1500", "offer_price": "1000"}, {"department": "Derma - IV Drips", "treatment": "NAD IV 250mg", "original_price": "2000", "offer_price": "1200"}, {"department": "Derma - IV Drips", "treatment": "NAD IV 500mg", "original_price": "2000", "offer_price": "1200"}, {"department": "Derma - IV Drips", "treatment": "VIP Anti Aging IV Drip", "original_price": "1500", "offer_price": "1200"}, {"department": "Derma - IV Drips", "treatment": "Energy Booster IV Drip", "original_price": "1500", "offer_price": "1200"}, {"department": "Derma - IV Drips", "treatment": "Hair Loss IV Drip", "original_price": "1500", "offer_price": "1200"}, {"department": "Derma - IV Drips", "treatment": "Skin Glow IV Drip", "original_price": "1500", "offer_price": "1200"}, {"department": "Derma - IV Drips", "treatment": "Hormonal Female Balance IV Drip", "original_price": "1500", "offer_price": "1200"}, {"department": "Derma - IV Drips", "treatment": "Gut Healer IV Drip", "original_price": "1500", "offer_price": "1200"}, {"department": "Derma - IV Drips", "treatment": "IV Drip (Skin Enhancement)", "original_price": "1499", "offer_price": "999", "3_sessions": "2899"}, {"department": "Derma - IV Drips", "treatment": "Glutathione Injection", "original_price": "999", "offer_price": "699", "3_sessions": "2599"}, {"department": "Derma - Fat Melting", "treatment": "Double Chin Fat Melting", "original_price": "800", "offer_price": "599", "3_sessions": "2299"}, {"department": "Derma - Fat Melting", "treatment": "Abdomen Focus Area Fat Melting", "original_price": "1400", "offer_price": "1199", "3_sessions": "3999"}, {"department": "Derma - Fat Melting", "treatment": "Abdomen Large Area Fat Melting", "original_price": "1750", "offer_price": "1299", "3_sessions": "5199"}, {"department": "Derma - Fat Melting", "treatment": "Small Area Fat Melting", "original_price": "800", "offer_price": "500", "3_sessions": "2200"}, {"department": "Derma - PRP", "treatment": "PRP Eclipse Kit (Face)", "original_price": "1500", "offer_price": "1200", "3_sessions": "3600"}, {"department": "Derma - PRP", "treatment": "PRP Hair (Turkey/China Brand)", "original_price": "599", "offer_price": "499", "3_sessions": "1797"}, {"department": "Derma - PRP", "treatment": "PRP + Stem Cells", "offer_price": "1249 (offer)", "notes": "Original: 1500-1800"}, {"department": "Derma - PRP", "treatment": "PRP + Microneedling", "original_price": "1200", "offer_price": "999"}, {"department": "Derma - PRP", "treatment": "PRP + RF Microneedling", "original_price": "starts 1400"}, {"department": "Derma - PRP", "treatment": "G Cell + 2ss PRP + 2ss Laser Hair Regrowth", "original_price": "6500"}, {"department": "Derma - Fillers", "treatment": "Lip Filler - Aliaxin LV", "original_price": "1249", "offer_price": "1099"}, {"department": "Derma - Fillers", "treatment": "Lip Filler - Restylane Kysse", "original_price": "1449", "offer_price": "1199"}, {"department": "Derma - Fillers", "treatment": "Lip Filler - Juvederm Ultra 3", "original_price": "1599", "offer_price": "1249"}, {"department": "Derma - Fillers", "treatment": "Lip Filler - Juvederm Volux", "original_price": "1599", "offer_price": "1249"}, {"department": "Derma - Fillers", "treatment": "Filler Dissolve", "original_price": "starts 800"}, {"department": "Derma - Fillers", "treatment": "Cheek/Face Filler - Juvederm Voluma", "original_price": "1500", "offer_price": "1299"}, {"department": "Derma - Fillers", "treatment": "Cheek/Face Filler - Juvederm Ultra 4", "original_price": "1500", "offer_price": "1299"}, {"department": "Derma - Fillers", "treatment": "Cheek/Face Filler - Aliaxin GP", "original_price": "1200", "offer_price": "1099"}, {"department": "Derma - Fillers", "treatment": "Cheek/Face Filler - Restylane Defyne", "original_price": "1500", "offer_price": "1249"}, {"department": "Derma - Fillers", "treatment": "Cheek/Face Filler - Aliaxin EV", "original_price": "1500", "offer_price": "1099"}, {"department": "Derma - Fillers", "treatment": "Radiesse Filler for Neck", "original_price": "2500", "offer_price": "1999"}, {"department": "Derma - Fillers", "treatment": "Sculptra 10ml", "original_price": "3000", "offer_price": "1999"}, {"department": "Derma - Fillers", "treatment": "Chin Filler - Aliaxin SV", "original_price": "1500", "offer_price": "1099"}, {"department": "Derma - Fillers", "treatment": "Chin Filler - Aliaxin GP", "original_price": "1500", "offer_price": "1099"}, {"department": "Derma - Fillers", "treatment": "Jaw Line Filler", "original_price": "starting 700"}, {"department": "Derma - Fillers", "treatment": "Non-Surgical Rhinoplasty (Nose Filler)", "original_price": "1299"}, {"department": "Derma - Fillers", "treatment": "Dark Circles Filler - Xela Derm Silver", "original_price": "1500", "offer_price": "1249"}, {"department": "Derma - Fillers", "treatment": "Dark Circles Filler - Xela Derm Gold", "original_price": "1800", "offer_price": "1399"}, {"department": "Derma - Fillers", "treatment": "Dark Circles Filler - Teosyal Redensity 2", "original_price": "1450", "offer_price": "1299"}, {"department": "Derma - Fillers", "treatment": "Dark Circles Filler - Xela Derm Diamond", "original_price": "1450", "offer_price": "1299"}, {"department": "Derma - Fillers", "treatment": "Dark Circles Mesotherapy", "original_price": "799", "3_sessions": "2100"}, {"department": "Derma - Fillers", "treatment": "Body Filler - Privilege/Syringe 10ml", "original_price": "1300", "offer_price": "1049"}, {"department": "Derma - Fillers", "treatment": "Body Filler - Hyacorp/Syringe 10ml", "original_price": "1500", "offer_price": "1199"}, {"department": "Derma - Fillers", "treatment": "Hybrid Filler (Radiesse + Aliaxin)", "original_price": "2222", "notes": "Summer Offer"}, {"department": "Derma - Botox", "treatment": "Botox Nefertiti (Neck Area)", "original_price": "1600", "offer_price": "1449"}, {"department": "Derma - Botox", "treatment": "Botox Ponytail (Crows Feet)", "original_price": "600", "offer_price": "499"}, {"department": "Derma - Botox", "treatment": "Botox Forehead", "original_price": "900", "offer_price": "600"}, {"department": "Derma - Botox", "treatment": "Botox Nasolabial (Smile Lines)", "original_price": "800", "offer_price": "599"}, {"department": "Derma - Botox", "treatment": "Botox Underarms", "original_price": "2499", "offer_price": "2199"}, {"department": "Derma - Botox", "treatment": "Botox Masseter (Jaw Lines)", "original_price": "2000", "offer_price": "1499"}, {"department": "Derma - Botox", "treatment": "Botox 3 Areas", "original_price": "1500", "offer_price": "1200"}, {"department": "Derma - Botox", "treatment": "Baby Botox (Full Cheeks/Under Eye)", "original_price": "1500", "offer_price": "1200"}, {"department": "Derma - Botox", "treatment": "Botox Migraine", "original_price": "1500", "offer_price": "899"}, {"department": "Derma - Botox", "treatment": "Botox Frown Lines", "original_price": "800"}, {"department": "Derma - Botox", "treatment": "Botox Bunny Lines", "original_price": "700"}, {"department": "Derma - Botox", "treatment": "Botox Gummy Smile", "original_price": "699"}, {"department": "Derma - Botox", "treatment": "Botox Lip Flip", "original_price": "499"}, {"department": "Derma - Botox", "treatment": "Botox Upper Area", "original_price": "1600"}, {"department": "Derma - Botox", "treatment": "Botox Full Face", "original_price": "2800"}, {"department": "Derma - Threads", "treatment": "Mono Threads (per pc)", "original_price": "250", "offer_price": "150"}, {"department": "Derma - Threads", "treatment": "Full Face Threads", "original_price": "5000", "offer_price": "4200"}, {"department": "Derma - Threads", "treatment": "Long Threads (per pc)", "original_price": "700", "offer_price": "499"}, {"department": "Derma - Threads", "treatment": "Nose Threads", "original_price": "950", "offer_price": "699"}, {"department": "Derma - Active Acne", "treatment": "Centrico Peeling Mask", "original_price": "799", "offer_price": "599"}, {"department": "Derma - Active Acne", "treatment": "Subcision", "original_price": "1000", "offer_price": "799"}, {"department": "Derma - Active Acne", "treatment": "Subcision with Serum", "original_price": "1500", "offer_price": "1199"}, {"department": "Derma - Active Acne", "treatment": "Purecell Active Acne Injection", "original_price": "1500", "3_sessions": "4000"}, {"department": "Derma - Active Acne", "treatment": "Estilad Stop Acne", "original_price": "1200", "3_sessions": "3500"}, {"department": "Derma - Scar Removal", "treatment": "Kelloid Canalog 1ml", "original_price": "1499", "offer_price": "999"}, {"department": "Derma - Scar Removal", "treatment": "Fractional Laser for Scar", "original_price": "1250", "offer_price": "899", "3_sessions": "2499"}, {"department": "Derma - Scar Removal", "treatment": "Fractional Laser for Face", "original_price": "1350", "offer_price": "1099", "3_sessions": "2799"}, {"department": "Derma - Mesotherapy", "treatment": "Mesotherapy Face", "offer_price": "799"}, {"department": "Derma - Mesotherapy", "treatment": "Stem Cells for Hair", "original_price": "1000", "offer_price": "799"}, {"department": "Derma - Mesotherapy", "treatment": "Stem Cells for Face (Cellugena)", "original_price": "1000", "offer_price": "799"}, {"department": "Derma - Mesotherapy", "treatment": "Stem Cells for Face (Curacen)", "original_price": "1000", "offer_price": "799"}, {"department": "Derma - Dermapen", "treatment": "Dermapen for Face", "original_price": "1200", "offer_price": "999"}, {"department": "Derma - Dermapen", "treatment": "Scarlet RF + Microneedling", "original_price": "1350", "offer_price": "899"}, {"department": "Derma - Dermapen", "treatment": "Dermapen with Vitamins", "original_price": "1499", "offer_price": "1249"}, {"department": "Derma - Dermapen", "treatment": "Skin Tags Removal", "original_price": "1250", "offer_price": "849"}, {"department": "Derma - Dermapen", "treatment": "Mole Removal", "original_price": "1000", "offer_price": "799"}, {"department": "Derma - Dermapen", "treatment": "Plexer Plasma", "original_price": "4000", "offer_price": "3000", "notes": "Depends on area, mainly around eyes"}, {"department": "Derma - Dermapen", "treatment": "Oxygeneo", "original_price": "1200"}, {"department": "Derma - HIFU", "treatment": "HIFU Face Area", "original_price": "800", "offer_price": "699", "3_sessions": "1999"}, {"department": "Derma - HIFU", "treatment": "HIFU for Neck", "original_price": "700", "offer_price": "599", "3_sessions": "1799"}, {"department": "Derma - HIFU", "treatment": "HIFU Face & Neck", "original_price": "1500", "offer_price": "1249", "3_sessions": "2999"}, {"department": "Derma - Laser", "treatment": "Pico Laser Full Face", "original_price": "800", "offer_price": "599", "3_sessions": "2199"}, {"department": "Derma - Laser", "treatment": "Pico Laser with PRP", "original_price": "1200"}, {"department": "Derma - Laser", "treatment": "Pico with DNA", "original_price": "1500"}, {"department": "Derma - Laser", "treatment": "Pico with Stem Cell", "original_price": "1500"}, {"department": "Derma - Laser", "treatment": "CO2 Laser with Stem Cell", "original_price": "1500"}, {"department": "Derma - Laser", "treatment": "CO2 Laser with Exosome", "original_price": "1500"}, {"department": "Derma - Laser", "treatment": "CO2 Laser with DNA", "original_price": "1500"}, {"department": "Derma - Laser", "treatment": "Melasma Bright Treatment", "original_price": "1200", "offer_price": "999"}, {"department": "Derma - Laser", "treatment": "LUMICELL Pigmentation Treatment", "original_price": "800-1500", "notes": "Under eyes / Melasma / Intimate area"}, {"department": "Derma - Laser", "treatment": "Picosure Skin Rejuvenation", "original_price": "1200", "3_sessions": "3000", "6_sessions": "5400"}, {"department": "Derma - Laser", "treatment": "Picosure Pigmentation Laser", "original_price": "1200", "3_sessions": "3000", "6_sessions": "5400"}, {"department": "Derma - Laser", "treatment": "Tattoo Removal Small", "original_price": "799", "notes": "Starting price"}, {"department": "Derma - Laser", "treatment": "Tattoo Removal Medium", "original_price": "1100", "notes": "Starting price"}, {"department": "Derma - Laser", "treatment": "Tattoo Removal Large", "original_price": "1600", "notes": "Starting price"}, {"department": "Derma - Laser", "treatment": "Carbon Laser Peel", "original_price": "1200", "offer_price": "400"}, {"department": "Derma - Laser", "treatment": "GFC Treatment", "original_price": "499", "3_sessions": "1299"}, {"department": "Derma - Laser", "treatment": "Lipofirm Slimming Machine", "original_price": "700", "3_sessions": "1800"}, {"department": "Derma - RF Microneedling", "treatment": "RF Microneedling + Stem Cells", "original_price": "1800", "3_sessions": "4500"}, {"department": "Derma - RF Microneedling", "treatment": "RF Microneedling", "original_price": "1500", "3_sessions": "4000"}, {"department": "Derma - Morpheus 8", "treatment": "Morpheus 8 Face", "original_price": "1199", "3_sessions": "3299"}, {"department": "Derma - Morpheus 8", "treatment": "Morpheus 8 Face and Neck", "original_price": "1799", "3_sessions": "4999"}, {"department": "Derma - Morpheus 8", "treatment": "Morpheus 8 Abdomen", "original_price": "1999", "3_sessions": "5499"}, {"department": "Derma - Morpheus 8", "treatment": "Morpheus 8 with PRP or Meso", "original_price": "1399", "3_sessions": "3999"}, {"department": "Derma - Morpheus 8", "treatment": "Morpheus 8 with Stem Cells or Exosome", "original_price": "1799", "3_sessions": "4999"}, {"department": "Derma - Morpheus 8", "treatment": "Morpheus 8 Body", "original_price": "3999", "3_sessions": "10999"}, {"department": "Derma - Peels", "treatment": "Inno Peel Face", "original_price": "1500"}, {"department": "Derma - Peels", "treatment": "Inno Peel Under Arms", "original_price": "1500"}, {"department": "Derma - Peels", "treatment": "Inno Peel Neck", "original_price": "1500"}, {"department": "Derma - Peels", "treatment": "Inno Peel Knees/Knuckles", "original_price": "1500"}, {"department": "Derma - Peels", "treatment": "Inno Peel Feet/Hands", "original_price": "1500"}, {"department": "Derma - Peels", "treatment": "Inno Peel Bikini Line", "original_price": "1800"}, {"department": "Derma - Peels", "treatment": "Inno Peel Butt Area", "original_price": "1800"}, {"department": "Derma - Peels", "treatment": "TCA Peel Face", "original_price": "999"}, {"department": "Derma - Peels", "treatment": "TCA Peel Neck", "original_price": "899"}, {"department": "Derma - Peels", "treatment": "TCA Peel Small Areas", "original_price": "599"}, {"department": "Derma - Peels", "treatment": "Biorepeel Face", "original_price": "1200"}, {"department": "Derma - Peels", "treatment": "Biorepeel Under Arms", "original_price": "1200"}, {"department": "Derma - Peels", "treatment": "Biorepeel Neck", "original_price": "999"}, {"department": "Derma - Peels", "treatment": "Biorepeel Knees/Knuckles", "original_price": "999"}, {"department": "Derma - Peels", "treatment": "Biorepeel Feet/Hands", "original_price": "1200"}, {"department": "Derma - Peels", "treatment": "Biorepeel Bikini Line", "original_price": "1200"}, {"department": "Derma - Peels", "treatment": "Biorepeel Butt Area", "original_price": "1200"}, {"department": "Derma - Peels", "treatment": "Biorepeel Back", "original_price": "1500"}, {"department": "Derma - Peels", "treatment": "Carbon Laser Peel Under Arms", "original_price": "500"}, {"department": "Derma - Meso", "treatment": "Meso Lips", "original_price": "600", "3_sessions": "1500"}, {"department": "Derma - Meso", "treatment": "Meso Lipo Chin", "original_price": "800-1000", "3_sessions": "2200"}, {"department": "Derma - Meso", "treatment": "Meso Eye", "original_price": "800-1000", "3_sessions": "2200-2500"}, {"department": "Derma - Endo Lift", "treatment": "Endo Lift Face", "original_price": "7000", "offer_price": "5500"}, {"department": "Derma - Endo Lift", "treatment": "Endo Lift Arm", "original_price": "5000", "offer_price": "3999"}, {"department": "Derma", "treatment": "Spider Veins (Laser or Injections)", "original_price": "800"}, {"department": "Derma", "treatment": "Warts Removal", "original_price": "starts 1200"}, {"department": "Derma", "treatment": "Hemangioma", "original_price": "500-800", "notes": "With Dr. Mahmoud"}, {"department": "Derma", "treatment": "Pb Serum Drain", "original_price": "1500"}, {"department": "Derma", "treatment": "Pb Serum Smooth", "original_price": "1500"}, {"department": "Derma", "treatment": "Pb Serum Lift", "original_price": "1500"}, {"department": "Derma", "treatment": "Pb Serum Slim", "original_price": "1500"}, {"department": "Derma", "treatment": "Dr CYJ Hair Filler", "original_price": "1300", "3_sessions": "3500"}, {"department": "Derma", "treatment": "PShot", "1_session": "1200", "3_sessions": "1900 (2 sessions)"}, {"department": "Derma", "treatment": "NAD+ Mesotherapy Injection", "original_price": "444", "notes": "Summer Offer"}, {"department": "Derma - Combination", "treatment": "Pico Laser + PRP", "original_price": "1200"}, {"department": "Derma - Combination", "treatment": "Pico + DNA", "original_price": "1500"}, {"department": "Derma - Combination", "treatment": "Pico + Stem Cell", "original_price": "1500"}, {"department": "Dental", "treatment": "Scaling and Polishing", "original_price": "400", "offer_price": "200"}, {"department": "Dental", "treatment": "Deep Scaling & Polishing", "original_price": "500", "offer_price": "299"}, {"department": "Dental", "treatment": "Nano Whitening", "original_price": "1000", "offer_price": "499"}, {"department": "Dental", "treatment": "Emax Veneers", "original_price": "1000", "offer_price": "450 per tooth", "notes": "Starting price"}, {"department": "Dental", "treatment": "Composite Veneers", "original_price": "500", "offer_price": "350 per tooth", "notes": "Starting price"}, {"department": "Dental", "treatment": "Composite Filling / Bonding", "original_price": "500", "offer_price": "250 per tooth", "notes": "Starting price"}, {"department": "Dental", "treatment": "Zirconia Crown", "original_price": "1500", "offer_price": "999 per tooth", "notes": "Starting price"}, {"department": "Dental", "treatment": "Emax Crown", "original_price": "1200", "offer_price": "799 per tooth", "notes": "Starting price"}, {"department": "Dental", "treatment": "Root Canal", "original_price": "3000", "offer_price": "999 per tooth", "notes": "Starting price"}, {"department": "Dental", "treatment": "Posterior RCT", "original_price": "3500", "offer_price": "1499 per tooth", "notes": "Starting price"}, {"department": "Dental", "treatment": "Night Guard / Sport Guard", "original_price": "1100", "offer_price": "799"}, {"department": "Dental", "treatment": "Dental Aligners", "original_price": "15000", "offer_price": "10000", "notes": "Starting price"}, {"department": "Dental", "treatment": "Extraction", "original_price": "900 to 2000", "offer_price": "599 to 1499 per tooth", "notes": "Case to case basis"}, {"department": "Dental", "treatment": "Bridge", "original_price": "1500", "offer_price": "899 per tooth", "notes": "Emax/Zirconia"}, {"department": "Dental", "treatment": "Dental Implants", "original_price": "4500", "offer_price": "2000 per tooth", "notes": "Crown not included. Brand: Neodent"}, {"department": "Dental", "treatment": "Crown for Implant", "original_price": "3000", "offer_price": "1499 per tooth", "notes": "Luxury crowns available"}, {"department": "Dental", "treatment": "Retainer", "original_price": "1500", "offer_price": "1000 upper or lower / 1500 both"}, {"department": "Dental", "treatment": "Metal Braces", "original_price": "2000", "offer_price": "1000 upper or lower / 1500 both"}, {"department": "Dental", "treatment": "Ceramic Braces", "offer_price": "2000 upper or lower / 3000 both"}, {"department": "Dental", "treatment": "Snap on Smile", "original_price": "5000", "offer_price": "3000 upper and lower"}, {"department": "Dental", "treatment": "Gum Depigmentation", "original_price": "2000", "offer_price": "1500"}, {"department": "Dental", "treatment": "Nerve Filling", "original_price": "3000", "offer_price": "1500-2000"}, {"department": "Dental", "treatment": "Nerve Filling with Inflammation", "original_price": "3000", "offer_price": "2000-2500"}, {"department": "Dental", "treatment": "Gum Contouring / Gingivectomy", "original_price": "2000", "offer_price": "1200 to 1500"}, {"department": "Dental", "treatment": "Amalgam Removal", "original_price": "1000", "offer_price": "700"}, {"department": "Dental", "treatment": "Panoramic X-Ray", "original_price": "500", "offer_price": "200"}, {"department": "Dental", "treatment": "CBCT X-Ray", "original_price": "1000", "offer_price": "500 to 800"}, {"department": "Dental", "treatment": "Full Arch Denture (Upper/Lower)", "offer_price": "4000"}, {"department": "Dental", "treatment": "Partial Arch Denture (Upper/Lower)", "offer_price": "3200"}, {"department": "Dental", "treatment": "Scaling + Whitening + Home Whitening Package", "original_price": "2000", "offer_price": "1399"}, {"department": "Dental", "treatment": "Hollywood Smile", "offer_price": "555 per unit"}, {"department": "Laser Hair Removal", "treatment": "Small Area", "original_price": "99", "3_sessions": "249", "6_sessions": "449"}, {"department": "Laser Hair Removal", "treatment": "Underarm", "original_price": "149", "3_sessions": "399", "6_sessions": "699"}, {"department": "Laser Hair Removal", "treatment": "Full Face", "original_price": "250", "3_sessions": "599", "6_sessions": "999"}, {"department": "Laser Hair Removal", "treatment": "Beard Line", "original_price": "199", "3_sessions": "499", "6_sessions": "899"}, {"department": "Laser Hair Removal", "treatment": "Full Bikini Female", "original_price": "249", "3_sessions": "499", "6_sessions": "999"}, {"department": "Laser Hair Removal", "treatment": "Bikini Male", "original_price": "299", "3_sessions": "799", "6_sessions": "1399"}, {"department": "Laser Hair Removal", "treatment": "Half Arms or Legs", "original_price": "199", "3_sessions": "449", "6_sessions": "799"}, {"department": "Laser Hair Removal", "treatment": "Full Arms or Legs", "original_price": "249", "3_sessions": "549", "6_sessions": "1099"}, {"department": "Laser Hair Removal", "treatment": "Full Back", "original_price": "299", "3_sessions": "799", "6_sessions": "1399"}, {"department": "Laser Hair Removal", "treatment": "Full Body Male (With Chest and Back)", "original_price": "899", "3_sessions": "1999", "6_sessions": "3399"}, {"department": "Laser Hair Removal", "treatment": "Full Body Female (With Chest and Back)", "original_price": "599", "3_sessions": "1699", "6_sessions": "2999"}, {"department": "Laser Hair Removal - Offer", "treatment": "Small Area (Offer)", "original_price": "99", "3_sessions": "249", "6_sessions": "449"}, {"department": "Laser Hair Removal - Offer", "treatment": "Underarms (Offer)", "original_price": "99", "3_sessions": "249", "6_sessions": "449"}, {"department": "Laser Hair Removal - Offer", "treatment": "Full Face (Offer)", "original_price": "189", "3_sessions": "459", "6_sessions": "799"}, {"department": "Laser Hair Removal - Offer", "treatment": "Full Body Male With Chest Back (Offer)", "original_price": "549", "3_sessions": "1399", "6_sessions": "2599"}, {"department": "Laser Hair Removal - Offer", "treatment": "Full Body Female With Chest Back (Offer)", "original_price": "499", "3_sessions": "1299", "6_sessions": "2399"}, {"department": "Skin Specialist", "treatment": "Express Hydrafacial", "original_price": "299", "offer_price": "199"}, {"department": "Skin Specialist", "treatment": "Deep Hydrafacial", "original_price": "799", "offer_price": "444"}, {"department": "Skin Specialist", "treatment": "Red Carpet Hydrafacial", "original_price": "1399", "offer_price": "777"}, {"department": "Skin Specialist", "treatment": "Carbon Peel Face", "original_price": "500", "offer_price": "199"}, {"department": "Skin Specialist", "treatment": "Soft Light Laser", "original_price": "500", "offer_price": "199"}, {"department": "Skin Specialist", "treatment": "Dermapen Face", "original_price": "1000"}, {"department": "Psychiatric", "treatment": "Assessment", "original_price": "850", "notes": "50 minutes"}, {"department": "Psychiatric", "treatment": "Therapy Session", "original_price": "850", "notes": "50 minutes"}, {"department": "Psychiatric", "treatment": "Follow Up Session", "original_price": "600", "notes": "20 minutes"}, {"department": "Hair Transplant", "treatment": "Silver Package (Frontal Hairline)", "original_price": "5500", "notes": "1500-2000 Grafts + Blood Test + 1 PRP + 3 Laser + Kit"}, {"department": "Hair Transplant", "treatment": "Bronze Package", "original_price": "7500", "notes": "2500-3500 Grafts + Blood Test + 3 PRP + 6 Laser + Kit"}, {"department": "Hair Transplant", "treatment": "Gold Package (Full Coverage 2-day surgery)", "original_price": "10500", "notes": "3500-4500 Grafts + Blood Tests + 3-4 PRP + 8 Laser + Kit"}, {"department": "Hair Transplant", "treatment": "PRP Hair (1 Session)", "original_price": "699"}, {"department": "Hair Transplant", "treatment": "PRP Hair (3 Sessions)", "offer_price": "1800"}, {"department": "Weight Loss", "treatment": "Diet Plan (1 Month + 2 Follow Ups)", "original_price": "800", "offer_price": "500"}, {"department": "Weight Loss", "treatment": "Saxenda Daily Injection (1 Box 5 Pens)", "original_price": "2700", "offer_price": "2300", "notes": "Includes Diet Plan + 2 Follow Ups"}, {"department": "Weight Loss", "treatment": "Ozempic 0.25mg/0.5mg Pen", "original_price": "1800", "notes": "1 Pen + 4 needles + Diet Plan"}, {"department": "Weight Loss", "treatment": "Mounjaro (Tirzepatide) 1 Box (4 Pens)", "original_price": "3500", "offer_price": "3000"}, {"department": "Weight Loss", "treatment": "Wegovy 0.25mg/0.5mg Pen", "original_price": "1800"}, {"department": "Weight Loss", "treatment": "Stomach Botox", "original_price": "18000", "offer_price": "7000"}, {"department": "Weight Loss", "treatment": "Allurion Gastric Balloon", "original_price": "14000", "offer_price": "12000"}, {"department": "Weight Loss - Surgery", "treatment": "Endoscopic Sleeve Gastroplasty (ESG)", "original_price": "35000-38000"}, {"department": "Weight Loss - Surgery", "treatment": "Gastric Sleeve Surgery", "original_price": "50000+"}, {"department": "Weight Loss - Surgery", "treatment": "Gastric Bypass Surgery", "original_price": "50000+"}, {"department": "Plastic Surgery", "treatment": "Abdomen + Flanks Liposuction", "original_price": "from 17000"}, {"department": "Plastic Surgery", "treatment": "Rhinoplasty (Nose Job)", "original_price": "from 20000"}, {"department": "Plastic Surgery", "treatment": "Tummy Tuck (Abdominoplasty)", "original_price": "from 35000"}, {"department": "Plastic Surgery", "treatment": "Face Lift", "original_price": "from 36000"}, {"department": "Plastic Surgery", "treatment": "Breast Augmentation", "original_price": "from 19000"}, {"department": "Plastic Surgery - Local", "treatment": "Dimple Creation Both Sides", "original_price": "5000"}, {"department": "Plastic Surgery - Local", "treatment": "Mole Removal", "original_price": "2500"}, {"department": "Male Enhancement & Anti-Aging", "treatment": "IV Ozone", "original_price": "1200", "3_sessions": "3000"}, {"department": "Male Enhancement & Anti-Aging", "treatment": "IV Glutathione 600mg", "original_price": "700", "3_sessions": "1800"}, {"department": "Male Enhancement & Anti-Aging", "treatment": "10ml Penile Filler", "original_price": "8000"}, {"department": "Gynecology", "treatment": "Laser Tightening 1 Session", "original_price": "1200"}, {"department": "Gynecology", "treatment": "Laser Tightening 3 Sessions", "original_price": "3000"}, {"department": "Gynecology", "treatment": "PRP Female Enhancement", "original_price": "1000"}, {"department": "Gynecology - Surgery", "treatment": "Labiaplasty", "original_price": "15000"}, {"department": "Gynecology - Surgery", "treatment": "Cesarean", "original_price": "20000"}, {"department": "Gynecology - Surgery", "treatment": "Natural Delivery", "original_price": "15000"}, {"department": "Home Care", "treatment": "GP Visit", "original_price": "350 per visit"}, {"department": "Home Care", "treatment": "Physiotherapy Single Session", "original_price": "300", "notes": "1 hour per session"}, {"department": "Home Care", "treatment": "IV Infusion Hydration 500ml", "original_price": "400"}, {"department": "Home Care - Lab Profiles", "treatment": "STD Screen Profile", "offer_price": "700"}, {"department": "Home Care - Lab Profiles", "treatment": "Thyroid Profile Free (TSH/FT3/FT4)", "offer_price": "250"}, {"department": "Home Care - Lab Profiles", "treatment": "Check Up Profile (CBC/ESR/Glucose/Lipids/Kidney/Liver)", "offer_price": "550"}, {"department": "Blood Tests", "treatment": "Complete Blood Count - CBC", "original_price": "100"}, {"department": "Blood Tests", "treatment": "Vitamin D 25-OH", "original_price": "312"}, {"department": "Blood Tests", "treatment": "Lipid Profile", "original_price": "200"}, {"department": "Blood Tests", "treatment": "Thyroid Stimulating Hormone TSH", "original_price": "150"}, {"department": "Blood Tests", "treatment": "HIV Ag/Ab 1&2", "original_price": "150"}, {"department": "Blood Tests", "treatment": "Hepatitis B Surface Ag", "original_price": "150"}, {"department": "Blood Tests", "treatment": "Hepatitis C Virus Abs", "original_price": "150"}, {"department": "Blood Tests", "treatment": "HbA1c Glycated Haemoglobin", "original_price": "230"}, {"department": "Blood Tests", "treatment": "Testosterone Total", "original_price": "150"}, {"department": "Blood Tests", "treatment": "Prolactin", "original_price": "160"}, {"department": "Blood Tests", "treatment": "FSH Follicular Stimulating Hormone", "original_price": "120"}, {"department": "Blood Tests", "treatment": "Estradiol E2", "original_price": "150"}, {"department": "Blood Tests", "treatment": "Progesterone", "original_price": "160"}, {"department": "Blood Tests", "treatment": "AMH Anti Mullerian Hormone", "original_price": "120"}, {"department": "Blood Tests", "treatment": "Vitamin B12", "original_price": "230"}, {"department": "Blood Tests", "treatment": "Ferritin In Serum", "original_price": "150"}, {"department": "Blood Tests", "treatment": "Iron Fe Serum", "original_price": "60"}, {"department": "Blood Tests", "treatment": "CRP C-Reactive Protein Quantitative", "original_price": "60"}, {"department": "Blood Tests", "treatment": "Pap Smear", "original_price": "300"}, {"department": "Blood Tests", "treatment": "Semen Analysis", "original_price": "120"}, {"department": "Blood Tests", "treatment": "Urine Analysis", "original_price": "60"}, {"department": "Blood Tests", "treatment": "Stool Analysis", "original_price": "205"}, {"department": "Blood Tests", "treatment": "D-Dimer", "original_price": "250"}, {"department": "Blood Tests", "treatment": "Cortisol AM", "original_price": "200"}, {"department": "Blood Tests", "treatment": "DHEA-S", "original_price": "170"}, {"department": "Blood Tests", "treatment": "PSA Total", "original_price": "150"}, {"department": "Blood Tests", "treatment": "Insulin Level", "original_price": "250"}, {"department": "Blood Tests", "treatment": "HPV Detection and Genotyping PCR", "original_price": "450"}, {"department": "Piercing", "treatment": "Ear Piercing Adult", "original_price": "250", "notes": "Hypoallergenic studs included"}, {"department": "Piercing", "treatment": "Ear Piercing Baby (Up to 1 Year)", "original_price": "200"}];
+
+// ── AUTH ─────────────────────────────────────────────────────────────────────
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  if (USERS[u] && USERS[u].pass === p) {
+    currentUser = { username: u, role: USERS[u].role };
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('user-badge').textContent = '👤 ' + u;
+    if (currentUser.role === 'admin') {
+      document.getElementById('admin-tab-btn').style.display = '';
+      document.getElementById('tab-admin').style.display = '';
+    }
+    initApp();
+  } else {
+    const err = document.getElementById('login-error');
+    err.style.display = 'block';
+    setTimeout(() => err.style.display = 'none', 3000);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  document.getElementById('login-user').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-pass').focus(); });
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 20; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.cssText = `left:${Math.random()*100}%;width:${Math.random()*3+1}px;height:${Math.random()*3+1}px;animation-duration:${Math.random()*15+10}s;animation-delay:${Math.random()*10}s;`;
+    container.appendChild(p);
+  }
+});
+
+function doLogout() { location.reload(); }
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+function initApp() {
+  const cached = localStorage.getItem(STORAGE_KEY_DATA);
+  if (cached) {
+    priceData = JSON.parse(cached);
+    const ts = localStorage.getItem(STORAGE_KEY_TS);
+    setSyncStatus('success', '✅ Prices loaded from cache. Last synced: ' + (ts || 'unknown'));
+    document.getElementById('last-sync-time').textContent = 'Last synced: ' + (ts || 'unknown');
+    populateDeptDropdowns();
+    doSearch();
+  }
+  loadFromSheets();
+}
+
+// ── GOOGLE SHEETS LOAD ────────────────────────────────────────────────────────
+async function loadFromSheets() {
+  if (!scriptUrl) {
+    setSyncStatus('offline', '⚠️ Google Sheets not configured. Using built-in price list. Go to Admin → Setup to connect.');
+    priceData = JSON.parse(localStorage.getItem(STORAGE_KEY_DATA) || 'null') || RAW_DATA;
+    populateDeptDropdowns();
+    renderPriceTable();
+    doSearch();
+    return;
+  }
+  setSyncStatus('loading', '⏳ Loading live prices from Google Sheets...');
+  try {
+    const res = await fetch(scriptUrl + '?action=get&t=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    if (json.status !== 'ok') throw new Error('Script error');
+    priceData = json.data.filter(r => r.treatment && r.department);
+    const ts = new Date().toLocaleString('en-AE', {timeZone:'Asia/Dubai'});
+    localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(priceData));
+    localStorage.setItem(STORAGE_KEY_TS, ts);
+    setSyncStatus('success', '✅ Live prices loaded — ' + priceData.length + ' treatments · ' + ts);
+    document.getElementById('last-sync-time').textContent = 'Last synced: ' + ts;
+    populateDeptDropdowns();
+    renderPriceTable();
+    doSearch();
+  } catch(e) {
+    const cached = localStorage.getItem(STORAGE_KEY_DATA);
+    if (cached) {
+      priceData = JSON.parse(cached);
+      setSyncStatus('offline', '⚠️ Could not reach Google Sheets. Showing cached prices. (' + e.message + ')');
+    } else {
+      priceData = RAW_DATA;
+      setSyncStatus('error', '❌ Could not load from Google Sheets. Check your script URL in Admin. Using built-in data.');
+    }
+    populateDeptDropdowns();
+    renderPriceTable();
+    doSearch();
+  }
+}
+
+function setSyncStatus(type, msg) {
+  ['lookup','admin'].forEach(view => {
+    const bar = document.getElementById('sync-bar-' + view);
+    if (!bar) return;
+    bar.className = 'sync-bar ' + type;
+    const span = bar.querySelector('span');
+    if (span) span.textContent = msg;
+  });
+  const cBox = document.getElementById('connection-status-box');
+  if (cBox) {
+    if (type === 'success') { cBox.style.background='#f0fdf4'; cBox.style.borderColor='#bbf7d0'; cBox.style.color='#15803d'; cBox.textContent='✅ Connected — prices synced from Google Sheets'; }
+    else if (type === 'loading') { cBox.style.background='#eff6ff'; cBox.style.borderColor='#bfdbfe'; cBox.style.color='#1d4ed8'; cBox.textContent='⏳ Syncing...'; }
+    else if (type === 'offline') { cBox.style.background='#fffbeb'; cBox.style.borderColor='#fcd34d'; cBox.style.color='#92400e'; cBox.textContent='⚠️ Offline — using cached prices'; }
+    else { cBox.style.background='#fef2f2'; cBox.style.borderColor='#fecaca'; cBox.style.color='#dc2626'; cBox.textContent='❌ Not connected to Google Sheets'; }
+  }
+}
+
+// ── SAVE TO SHEETS ────────────────────────────────────────────────────────────
+async function saveToSheets(payload) {
+  if (!scriptUrl) {
+    localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(priceData));
+    showToast('Saved locally (no Sheets connected)', false);
+    return true;
+  }
+  document.getElementById('saving-indicator').classList.add('show');
+  try {
+    const res = await fetch(scriptUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if (json.status !== 'ok') throw new Error('Save failed');
+    localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(priceData));
+    document.getElementById('saving-indicator').classList.remove('show');
+    return true;
+  } catch(e) {
+    document.getElementById('saving-indicator').classList.remove('show');
+    localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(priceData));
+    showToast('⚠️ Saved locally — could not reach Sheets: ' + e.message, false);
+    return false;
+  }
+}
+
+// ── SETUP ─────────────────────────────────────────────────────────────────────
+function showSetup() {
+  document.getElementById('setup-card').style.display = 'block';
+  document.getElementById('script-url-input').value = scriptUrl;
+  document.getElementById('setup-card').scrollIntoView({ behavior: 'smooth' });
+}
+
+function saveScriptUrl() {
+  const url = document.getElementById('script-url-input').value.trim();
+  if (!url || !url.includes('script.google.com')) { showToast('Please enter a valid Apps Script URL'); return; }
+  scriptUrl = url;
+  localStorage.setItem(STORAGE_KEY_URL, scriptUrl);
+  document.getElementById('setup-card').style.display = 'none';
+  showToast('✅ Connected! Loading prices...', true);
+  loadFromSheets();
+}
+
+// ── DEPARTMENTS ───────────────────────────────────────────────────────────────
+function getDepts() { return [...new Set(priceData.map(r => r.department))].sort(); }
+
+function populateDeptDropdowns() {
+  const depts = getDepts();
+  ['dept-filter','new-dept','edit-dept'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const isFilter = id === 'dept-filter';
+    el.innerHTML = (isFilter ? '<option value="">All Departments</option>' : '') +
+      depts.map(d => `<option value="${d}">${d}</option>`).join('');
+  });
+  const adminSel = document.querySelector('#view-admin .dept-select:last-child');
+  if (adminSel && !adminSel.id) {
+    adminSel.innerHTML = '<option value="">All Departments</option>' + depts.map(d => `<option value="${d}">${d}</option>`).join('');
+    adminSel.onchange = e => filterTableDept(e.target.value);
+  }
+}
+
+// ── SEARCH ────────────────────────────────────────────────────────────────────
+function doSearch() {
+  const q = document.getElementById('search-input').value.toLowerCase().trim();
+  const dept = document.getElementById('dept-filter').value;
+  let results = priceData.filter(r => {
+    const mQ = !q || r.treatment.toLowerCase().includes(q) || r.department.toLowerCase().includes(q);
+    const mD = !dept || r.department === dept;
+    return mQ && mD;
+  }).slice(0, 100);
+  document.getElementById('result-count').textContent = results.length;
+  const list = document.getElementById('results-list');
+  if (!results.length) { list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔍</div>No results found</div>'; return; }
+  list.innerHTML = results.map(r => {
+    const idx = priceData.indexOf(r);
+    const isAdded = selectedItems.includes(r);
+    const raw = r.original_price || r['1_session'] || r.offer_price || '';
+    const num = parseFloat(String(raw).replace(/[^0-9.]/g,''));
+    const priceShow = num ? (vatOn ? `AED ${(num*1.05).toLocaleString('en',{maximumFractionDigits:0})}` : `AED ${num.toLocaleString('en',{maximumFractionDigits:0})}`) : (raw ? String(raw).substring(0,20) : '');
+    return `<div class="result-item ${isAdded?'selected':''}" onclick="toggleItem(${idx})">
+      <span class="result-dept-badge" title="${r.department}">${r.department}</span>
+      <span class="result-name">${r.treatment}</span>
+      <span class="result-price">${priceShow}</span>
+      <button class="add-btn ${isAdded?'added':''}" onclick="event.stopPropagation();toggleItem(${idx})">${isAdded?'✓':'+'}</button>
+    </div>`;
+  }).join('');
+}
+
+// ── SELECTION ─────────────────────────────────────────────────────────────────
+function toggleItem(idx) {
+  const rec = priceData[idx];
+  const pos = selectedItems.indexOf(rec);
+  if (pos === -1) selectedItems.push(rec); else selectedItems.splice(pos,1);
+  renderSelected(); doSearch();
+}
+function renderSelected() {
+  document.getElementById('selected-count').textContent = selectedItems.length;
+  const list = document.getElementById('selected-list');
+  if (!selectedItems.length) { list.innerHTML = '<div class="empty-state" style="padding:24px 16px;"><div style="font-size:20px;margin-bottom:8px;opacity:0.3">📋</div>Add items from search results</div>'; return; }
+  list.innerHTML = selectedItems.map((r,i) => `<div class="selected-item"><div class="selected-info"><div class="selected-name">${r.treatment}</div><div class="selected-dept">${r.department}</div></div><button class="remove-btn" onclick="removeItem(${i})">✕</button></div>`).join('');
+}
+function removeItem(i) { selectedItems.splice(i,1); renderSelected(); doSearch(); }
+function clearSelected() { selectedItems=[]; renderSelected(); doSearch(); document.getElementById('report-section').style.display='none'; }
+
+// ── VAT ───────────────────────────────────────────────────────────────────────
+function toggleVAT() {
+  vatOn = !vatOn;
+  document.getElementById('vat-toggle').classList.toggle('active', vatOn);
+  doSearch();
+  if (document.getElementById('report-output').textContent.trim()) generateReport();
+}
+function applyVAT(val) {
+  if (!val || String(val).trim()==='-') return '—';
+  const n = parseFloat(String(val).replace(/[^0-9.]/g,''));
+  if (isNaN(n)) return String(val);
+  return vatOn ? `AED ${(n*1.05).toLocaleString('en-AE',{maximumFractionDigits:0})} (incl. VAT)` : `AED ${n.toLocaleString('en-AE',{maximumFractionDigits:0})}`;
+}
+
+// ── REPORT ────────────────────────────────────────────────────────────────────
+function generateReport() {
+  if (!selectedItems.length) { showToast('Add at least one item first'); return; }
+  let lines = ['╔══════════════════════════════════════════════════════════╗','║       ENFIELD ROYAL CLINIC — DUBAI                      ║','║       Villa 1089, Al Wasl Road, Al Manara Area          ║','║       📞 +971 4373 9000                                  ║','╚══════════════════════════════════════════════════════════╝', vatOn ? '  ★ All prices include 5% VAT' : '', ''];
+  let lastDept = null;
+  selectedItems.forEach(r => {
+    if (r.department !== lastDept) { lastDept=r.department; lines.push(''); lines.push(`▸ ${r.department.toUpperCase()}`); lines.push('─'.repeat(54)); }
+    lines.push(''); lines.push(`  ${r.treatment}`);
+    if (r.original_price) lines.push(`  Price         : ${applyVAT(r.original_price)}`);
+    if (r.offer_price) lines.push(`  Offer Price   : ${applyVAT(r.offer_price)}`);
+    if (r['1_session']) lines.push(`  1 Session     : ${applyVAT(r['1_session'])}`);
+    if (r['3_sessions']) lines.push(`  3 Sessions    : ${applyVAT(r['3_sessions'])}`);
+    if (r['6_sessions']) lines.push(`  6 Sessions    : ${applyVAT(r['6_sessions'])}`);
+    if (r.notes && r.notes !== 'null') lines.push(`  Notes         : ${r.notes}`);
+  });
+  lines.push('','══════════════════════════════════════════════════════════','  For bookings: info@royalclinicdubai.com','  www.royalclinicdubai.com','══════════════════════════════════════════════════════════');
+  document.getElementById('report-output').textContent = lines.join('\n');
+  document.getElementById('report-section').style.display = 'block';
+  document.getElementById('report-section').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function copyReport() {
+  const t = document.getElementById('report-output').textContent;
+  if (!t.trim()) { showToast('Generate a report first'); return; }
+  navigator.clipboard.writeText(t).then(() => showToast('✅ Copied!', true));
+}
+
+// ── ADMIN TABLE ───────────────────────────────────────────────────────────────
+function renderPriceTable() {
+  const q = tableFilter.toLowerCase();
+  const rows = priceData.filter(r => (!q || r.treatment.toLowerCase().includes(q) || r.department.toLowerCase().includes(q)) && (!tableDept || r.department===tableDept));
+  document.getElementById('total-count').textContent = `Showing ${rows.length} of ${priceData.length} treatments`;
+  document.getElementById('price-tbody').innerHTML = rows.map(r => {
+    const idx = priceData.indexOf(r);
+    return `<tr>
+      <td><span class="td-dept" title="${r.department}">${r.department}</span></td>
+      <td style="max-width:260px;font-weight:500">${r.treatment}</td>
+      <td class="td-price">${r.original_price||'—'}</td>
+      <td style="color:var(--success);font-weight:600">${r.offer_price||''}</td>
+      <td style="color:var(--muted);font-size:11px;max-width:160px">${r.notes&&r.notes!=='null'?r.notes:''}</td>
+      <td><button class="edit-row-btn" onclick="openEditModal(${idx})">✏ Edit</button></td>
+    </tr>`;
+  }).join('');
+  populateDeptDropdowns();
+}
+function filterTable(q) { tableFilter=q; renderPriceTable(); }
+function filterTableDept(d) { tableDept=d; renderPriceTable(); }
+
+// ── ADD NEW ───────────────────────────────────────────────────────────────────
+async function addNewItem() {
+  const dept = document.getElementById('new-dept').value;
+  const name = document.getElementById('new-name').value.trim();
+  const orig = document.getElementById('new-orig').value.trim();
+  const offer = document.getElementById('new-offer').value.trim();
+  const notes = document.getElementById('new-notes').value.trim();
+  if (!dept || !name) { showToast('Department and treatment name are required'); return; }
+  const newRecord = { department: dept, treatment: name, original_price: orig||null, offer_price: offer||null, notes: notes||null };
+  priceData.unshift(newRecord);
+  renderPriceTable(); doSearch();
+  const ok = await saveToSheets({ action:'update', ...newRecord });
+  if (ok) showToast('✅ Treatment added on all devices!', true);
+  document.getElementById('new-name').value=''; document.getElementById('new-orig').value=''; document.getElementById('new-offer').value=''; document.getElementById('new-notes').value='';
+}
+
+// ── EDIT MODAL ────────────────────────────────────────────────────────────────
+function openEditModal(idx) {
+  const r = priceData[idx];
+  document.getElementById('edit-index').value = idx;
+  document.getElementById('edit-name').value = r.treatment||'';
+  document.getElementById('edit-orig').value = r.original_price||'';
+  document.getElementById('edit-offer').value = r.offer_price||'';
+  document.getElementById('edit-3s').value = r['3_sessions']||'';
+  document.getElementById('edit-6s').value = r['6_sessions']||'';
+  document.getElementById('edit-notes').value = r.notes||'';
+  const depts = getDepts();
+  document.getElementById('edit-dept').innerHTML = depts.map(d => `<option value="${d}" ${d===r.department?'selected':''}>${d}</option>`).join('');
+  document.getElementById('edit-modal').classList.add('open');
+}
+function closeModal() { document.getElementById('edit-modal').classList.remove('open'); }
+
+async function saveEdit() {
+  const idx = parseInt(document.getElementById('edit-index').value);
+  const oldRecord = { ...priceData[idx] };
+  priceData[idx] = {
+    ...priceData[idx],
+    department: document.getElementById('edit-dept').value,
+    treatment: document.getElementById('edit-name').value,
+    original_price: document.getElementById('edit-orig').value||null,
+    offer_price: document.getElementById('edit-offer').value||null,
+    '3_sessions': document.getElementById('edit-3s').value||null,
+    '6_sessions': document.getElementById('edit-6s').value||null,
+    notes: document.getElementById('edit-notes').value||null,
+  };
+  renderPriceTable(); doSearch(); closeModal();
+  const ok = await saveToSheets({ action:'update', ...priceData[idx], _old_treatment: oldRecord.treatment, _old_department: oldRecord.department });
+  if (ok) showToast('✅ Price updated on all devices!', true);
+}
+
+async function deleteItem() {
+  if (!confirm('Delete this treatment from all devices?')) return;
+  const idx = parseInt(document.getElementById('edit-index').value);
+  const record = priceData[idx];
+  priceData.splice(idx, 1);
+  renderPriceTable(); doSearch(); closeModal();
+  const ok = await saveToSheets({ action:'delete', department: record.department, treatment: record.treatment });
+  if (ok) showToast('Treatment deleted from all devices', false);
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function showTab(name) {
+  document.getElementById('view-lookup').style.display = name==='lookup' ? '' : 'none';
+  document.getElementById('view-admin').style.display = name==='admin' ? '' : 'none';
+  document.getElementById('tab-lookup').classList.toggle('active', name==='lookup');
+  document.getElementById('tab-admin').classList.toggle('active', name==='admin');
+  if (name==='admin') {
+    renderPriceTable();
+    if (!scriptUrl) { document.getElementById('setup-card').style.display='block'; }
+    else { document.getElementById('setup-card').style.display='none'; }
+    const syncBarAdmin = document.getElementById('sync-bar-lookup');
+    if (!document.getElementById('sync-bar-admin')) {
+      const bar = syncBarAdmin.cloneNode(true);
+      bar.id = 'sync-bar-admin';
+      bar.querySelector('button').onclick = loadFromSheets;
+      document.getElementById('view-admin').insertBefore(bar, document.getElementById('view-admin').firstChild);
+    }
+  }
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function showToast(msg, success=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (success?' success':'') + ' show';
+  setTimeout(() => t.className='toast', 3500);
+}
+
+document.getElementById('edit-modal').addEventListener('click', function(e) { if (e.target===this) closeModal(); });
+</script>
+</body>
+</html>
