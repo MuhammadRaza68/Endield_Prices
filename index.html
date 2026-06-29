@@ -297,7 +297,8 @@ tbody td { padding:10px 14px; font-size:12px; color:var(--text); }
         </ol>
         <div style="background:#1e293b;border-radius:10px;padding:16px;margin:16px 0;overflow-x:auto;">
           <pre style="color:#e2e8f0;font-size:11px;line-height:1.7;font-family:'Courier New',monospace;margin:0;white-space:pre-wrap;">function doGet(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var sheetId = PropertiesService.getScriptProperties().getProperty("SHEET_ID"); 
+var sheet = SpreadsheetApp.openById(sheetId).getActiveSheet();
   var data = sheet.getDataRange().getValues();
   var headers = data[0];
   var rows = data.slice(1).map(function(row) {
@@ -310,7 +311,7 @@ tbody td { padding:10px 14px; font-size:12px; color:var(--text); }
 }
 
 function doPost(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var sheetId = PropertiesService.getScriptProperties().getProperty("SHEET_ID"); var sheet = SpreadsheetApp.openById(sheetId).getActiveSheet();
   var payload = JSON.parse(e.postData.contents);
   if (payload.action === 'update') {
     var data = sheet.getDataRange().getValues();
